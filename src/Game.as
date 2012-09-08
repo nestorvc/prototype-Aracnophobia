@@ -5,7 +5,7 @@ package
 	 * @author Jose
 	 */
 	import org.flixel.*;
-	[SWF(width="800", height="600", backgroundColor="#0000FF")]
+	[SWF(width="800", height="240", backgroundColor="#0000FF")]
 	public class Game extends FlxGame
 	{		
 		public function Game() {
