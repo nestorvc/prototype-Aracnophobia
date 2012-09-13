@@ -59,6 +59,9 @@ package
 		//Sky background
 		public var sky:Sky;
 		
+		//Minions group
+		private var minions:Minions;
+		
 		override public function create():void {	
 			
 			//******************INITIALIZATIONS******************
@@ -106,6 +109,9 @@ package
 			//Sky creation
 			sky = new Sky();
 			
+			//Minions enemies creation
+			minions = new Minions(fullSpider.spider,15);
+			
 			//******************ADDS******************
 			//Adding the Sky background
 			add(sky);
@@ -128,6 +134,7 @@ package
 			add(plyer);
 			add(group2);
 			add(boxDebris);
+			add(minions);
 			add(fullSpider);
 			
 			//******************MISC******************
@@ -153,6 +160,8 @@ package
 			FlxG.collide(group2, randomMap2);
 			FlxG.collide(boxDebris, randomMap1);
 			FlxG.collide(boxDebris, randomMap2);
+			FlxG.collide(minions, randomMap1);
+			FlxG.collide(minions, randomMap2);
 			
 			//Setting camera bounds to increase as the player through the map
 			FlxG.camera.setBounds(0, 0, 300 + plyer.x, randomMap1.height);
@@ -168,6 +177,9 @@ package
 			
 			//enemy acceleration rate
 			fullSpider.spider.acceleration.x = fullSpider.spider.maxVelocity.x * 8;
+			
+			//Default movement-values for "minion"
+			minions.callAll("eject",true);	
 			
 			//calculating distance traveled with function calculatePlayerDistance
 			distance = calculatePlayerDistance(plyer);
@@ -225,6 +237,10 @@ package
 				plyer.velocity.y = -plyer.maxVelocity.y/2;	
 				plyer.play("Jump");
 			}	
+			
+			if(FlxG.keys.justPressed("Z")){
+				minions.launch();
+			}	
 				
 			//this if controls that the obstacles group is not greater than 100
 			//to avoid lag in game
@@ -244,8 +260,10 @@ package
 			
 			//overlaping objects and functions
 			FlxG.overlap(plyer, fullSpider, hitSpider);	
-			FlxG.overlap(plyer, group2,hitBox);
+			FlxG.overlap(plyer, group2,hitObj);
+			FlxG.overlap(plyer, minions, hitObj);
 			FlxG.overlap(fullSpider.spider, group2, destroyBox);	
+			FlxG.overlap(fullSpider.spider, minions, returnMinion);
 			
 			super.update();			
 		}
@@ -309,8 +327,8 @@ package
 		
 		//function executed when player overlaps an obstacle
 		//flickers the obstacle and reduces player speed
-		public function hitBox(plyer:FlxObject, box:FlxObject):void {			
-			box.flicker();
+		public function hitObj(plyer:FlxObject, object:FlxObject):void {			
+			object.flicker();
 			deacceleration();
 		}
 		
@@ -324,6 +342,15 @@ package
 			
 			box.kill();
 		}
+		
+		//function executed when spider overlaps a minion
+		//destroy the minion so it can be reused
+		public function returnMinion(spider:FlxObject, minion:FlxObject):void
+		{
+			if(minion.x < spider.x+spider.width/2){
+				minion.kill();
+			}
+		}	
 		
 		//it calls new GameOver State
 		public function callOverState():void {			
