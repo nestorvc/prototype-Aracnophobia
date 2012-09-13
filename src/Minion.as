@@ -5,7 +5,7 @@ package
 	public class Minion extends FlxSprite
 	{
 		//Image source for the player sprite
-		[Embed(source = '/assets/sprites/baddie_cat_2.png')] private var minionPNG:Class;
+		[Embed(source = '/sprites/baddie_cat_2.png')] private var minionPNG:Class;
 		
 		public function Minion(X:Number=0, Y:Number=0, SimpleGraphic:Class=null)
 		{

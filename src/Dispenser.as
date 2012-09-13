@@ -9,7 +9,7 @@ package
 	public class Dispenser extends FlxEmitter
 	{
 		//Image source for the debris sprite
-		[Embed(source='/assets/sprites/gibs.png')] private var ImgGibs:Class;
+		[Embed(source='/sprites/gibs.png')] private var ImgGibs:Class;
 		
 		/**
 		 * The constructor of this class.

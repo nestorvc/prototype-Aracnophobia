@@ -9,7 +9,7 @@ package
 	public class Spider extends FlxSprite
 	{
 		//Image source for the spider sprite
-		[Embed(source = '/assets/sprites/arana.png')] private var aranaPNG:Class;
+		[Embed(source = '/sprites/aranaNueva(331x338).png')] private var aranaPNG:Class;
 		
 		/**
 		 * The constructor of this class.
@@ -21,12 +21,13 @@ package
 		public function Spider(X:Number, Y:Number) 
 		{
 			super(X, Y);
-			loadGraphic(aranaPNG, false, false, 120, 240, true);
+			loadGraphic(aranaPNG,true,false,331,338);
 			
-			maxVelocity.x = 75;
+			maxVelocity.x = 200;
 			maxVelocity.y = 100;
 			/*acceleration.y = 200;*/
-			drag.x = maxVelocity.x*2;
+			drag.x = maxVelocity.x * 2;
+			addAnimation("Bite", [0,1,2,1], 10, true);
 		}
 	}
 }

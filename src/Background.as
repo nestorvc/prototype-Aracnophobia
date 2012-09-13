@@ -5,10 +5,10 @@ package
 	 * @author Jose
 	 */
 	import org.flixel.*;
-	public class Background extends FlxSprite
+	public class BackGround extends FlxSprite
 	{
-		[Embed(source = '/assets/sprites/cloudBack.png')] private var Graphic:Class;
-		public function Background(x:uint, y:uint) 
+		[Embed(source = '/sprites/cloudBack.png')] private var Graphic:Class;
+		public function BackGround(x:uint, y:uint) 
 		{
 			this.x = x;
 			this.y = y;
