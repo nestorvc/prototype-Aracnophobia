@@ -6,15 +6,22 @@ package
 	 */
 	import mx.core.FlexSprite;
 	import org.flixel.*;
+	
 	import org.flixel.plugin.photonstorm.FlxCollision;
 	
 	public class PlayState extends FlxState
 	{
+		
+		
+		
+		
 		//Pool for the tileMaps and tile Maps to be added
 		private var tileMapPool:FlxGroup;
-		//Sprites that will be placed on screen with random values
+		//tileMaps that will be assigned random values
 		private var randomTileMap1:FlxTilemap;
 		private var randomTileMap2:FlxTilemap;
+		//tile map group that contains random tilemaps
+		private var tileMapsOnScreen:FlxGroup;
 		//Control variable for world creation
 		private var added:Boolean;
 		//Group for sprite pool for dynamic obstacle creation.
@@ -49,13 +56,14 @@ package
 			//******************INITIALIZATIONS******************
 			
 			tileMapPool = new FlxGroup();
+			tileMapsOnScreen = new FlxGroup();
 			obstacleSpriteGroup = new FlxGroup();
 			randomTileMap1 = new LowGroundTileMap();
 			randomTileMap2 = new LowGroundTileMap();			
 			web = new Web(400, 160);
 			webGround = new WebGround(800, 285);
-			plyer = new player(randomTileMap1.x + 100, 100);
-			fullSpider = new FullSpider(-500, 0);
+			plyer = new player(randomTileMap1.x + 100, 100,50);
+			fullSpider = new FullSpider(-500, 130);
 			distanceText = new FlxText(20, 20, 200);
 			infoText = new FlxText(400, 20, 200, "X to jump C to slide");
 			minions = new Minions(fullSpider.spider, 15);
@@ -69,12 +77,15 @@ package
 			obstacleSpriteGroup.add(webGround);
 			obstacleSpriteGroup.add(new WebGround(1100, 285));
 			obstacleSpriteGroup.add(new Web(1400, 160));
-			add(randomTileMap1);
-			add(randomTileMap2);
+			tileMapsOnScreen.add(randomTileMap1);
+			tileMapsOnScreen.add(randomTileMap2);
+			
+			add(tileMapsOnScreen);
 			add(obstacleSpriteGroup);
 			add(plyer);
 			add(minions);
 			add(fullSpider);
+			add(plyer.bullet.group);
 			add(distanceText);
 			add(infoText);
 			
@@ -89,12 +100,16 @@ package
 			distanceText.scrollFactor.x = 0;
 			distanceText.scrollFactor.y = 0;
 			
-			auxSlide = Math.floor(plyer.height/2);
+			auxSlide = Math.floor(plyer.height / 2);
+			
+			randomTileMap2.x -= randomTileMap1.width;
+			
 			
 			FlxG.watch(plyer.acceleration, "x", "Player AccX");
 			FlxG.watch(fullSpider.spider.acceleration, "x", "Spider AccX");
 			FlxG.watch(fullSpider.spider, "x", "Player CoordX");
 			FlxG.watch(plyer, "height", "PLayer Height");
+			FlxG.watch(randomTileMap1, "x", "TilePosition");
 		
 		}
 		
@@ -103,10 +118,8 @@ package
 			
 			
 			//Collisions
-			FlxG.collide(randomTileMap1, plyer);
-			FlxG.collide(randomTileMap2, plyer);
-			FlxG.collide(minions, randomTileMap1);
-			FlxG.collide(minions, randomTileMap2);
+			FlxG.collide(tileMapsOnScreen, plyer);
+			FlxG.collide(minions, tileMapsOnScreen);
 			
 			//Setting camera bounds to increase as the player through the map
 			FlxG.camera.setBounds(0, 0, 300 + plyer.x, 360);
@@ -127,9 +140,7 @@ package
 			fullSpider.spider.acceleration.x = fullSpider.spider.maxVelocity.x * 8;
 			
 			//Timer setup //TODO
-			timer.start(2, 10, onTimer);
-			timer.time = Math.ceil(Math.random() * 3) + 1;
-			timer.loops++;
+	
 			
 			//Calculating distance traveled with function calculatePlayerDistance
 			distance = calculatePlayerDistance(plyer);
@@ -179,6 +190,12 @@ package
 			{
 				minions.launch();
 			}
+			//Fire bullet pressing Space
+			
+			if (FlxG.keys.justPressed("SPACE"))
+			{
+				plyer.bullet.fire();
+			}
 			
 			//Death trigger
 			if (gameOverTrigger())
@@ -207,8 +224,11 @@ package
 			//building sprites
 			if (plyer.x >= (randomTileMap1.x + FlxG.width/2) && !added)
 			{
+				
 				randomTileMap2 = generateTileMap(randomTileMap1);
-				add(randomTileMap2);
+				
+				tileMapsOnScreen.add(randomTileMap2);
+				
 				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
 				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
 				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
@@ -222,8 +242,10 @@ package
 			//building sprites	
 			if (plyer.x >= (randomTileMap2.x + FlxG.width/2) && added)
 			{
+				
 				randomTileMap1 = generateTileMap(randomTileMap2);
-				add(randomTileMap1);
+				tileMapsOnScreen.add(randomTileMap1);
+				
 				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
 				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
 				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
@@ -275,7 +297,7 @@ package
 		 * */
 		public function positionTileMap(referenceTileMap:FlxTilemap, tileMapToPosition:FlxTilemap):void
 		{
-			tileMapToPosition.x = referenceTileMap.width + referenceTileMap.x;
+			tileMapToPosition.reset(referenceTileMap.width + referenceTileMap.x, referenceTileMap.y);
 		
 		}
 		
