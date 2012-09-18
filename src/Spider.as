@@ -23,6 +23,8 @@ package
 			super(X, Y);
 			loadGraphic(aranaPNG,true,false,331,338);
 			
+			immovable = true;
+			
 			maxVelocity.x = 200;
 			maxVelocity.y = 100;
 			/*acceleration.y = 200;*/

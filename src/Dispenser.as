@@ -20,14 +20,14 @@ package
 		 */
 		public function Dispenser(X:Number=0, Y:Number=0, Size:Number=0)
 		{
-			super(X, Y, Size);		
+			super(X, Y, Size);					
 			
-			setSize(15,15);
+			setSize(24,24);
 			setXSpeed(-100,100);
 			setYSpeed(-20,20);
 			gravity = 500;
 			bounce = 0.3;
-			makeParticles(ImgGibs,200,16,true,0.8);
+			makeParticles(ImgGibs,200,16,true,0);
 			start(false,100,0.035);		
 		}
 	}

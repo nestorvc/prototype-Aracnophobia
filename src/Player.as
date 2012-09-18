@@ -6,7 +6,7 @@ package
 	 */
 	import org.flixel.*;
 	import org.flixel.plugin.photonstorm.*;
-	public class player  extends FlxSprite
+	public class Player  extends FlxSprite
 	{
 	[Embed(source = '/sprites/bichinNuevo(42x71).png')] private var Graphic:Class;
 	//image for the player's weapon
@@ -19,7 +19,7 @@ package
 	public var auxJump:Number;
 
 	
-		public function player(x:uint, y:uint, bulletAmount:uint) 
+		public function Player(x:uint, y:uint, bulletAmount:uint) 
 		{
 			this.x = x;
 			this.y = y;

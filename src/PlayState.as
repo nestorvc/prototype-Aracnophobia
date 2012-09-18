@@ -5,16 +5,12 @@ package
 	 * @author Jose
 	 */
 	import mx.core.FlexSprite;
-	import org.flixel.*;
 	
+	import org.flixel.*;
 	import org.flixel.plugin.photonstorm.FlxCollision;
 	
 	public class PlayState extends FlxState
 	{
-		
-		
-		
-		
 		//Pool for the tileMaps and tile Maps to be added
 		private var tileMapPool:FlxGroup;
 		//tileMaps that will be assigned random values
@@ -36,14 +32,9 @@ package
 		//Distace travelled by player
 		private var distance:uint;
 		//Player
-		private var plyer:player;
+		private var plyer:Player;
 		//Enemy Spider
-		private var fullSpider:FullSpider;
-		//Minions group
-		private var minions:Minions;
-		//Timer for minions
-		private var timer:FlxTimer;
-		
+		private var fullSpider:FullSpider;	
 		
 		public function PlayState()
 		{
@@ -61,13 +52,10 @@ package
 			randomTileMap2 = new LowGroundTileMap();			
 			web = new Web(400, 160);
 			webGround = new WebGround(800, 285);
-			plyer = new player(randomTileMap1.x + 100, 100,50);
+			plyer = new Player(randomTileMap1.x + 100, 100,50);
 			fullSpider = new FullSpider(-500, 130);
 			distanceText = new FlxText(20, 20, 200);
 			infoText = new FlxText(400, 20, 200, "X to jump C to slide");
-			minions = new Minions(fullSpider.spider, 15);
-			timer = new FlxTimer();
-			
 			
 			//******************ADDS******************
 			tileMapPool.add(new LowGroundTileMap());
@@ -83,7 +71,7 @@ package
 			add(obstacleSpriteGroup);
 			add(plyer.bullet.group);
 			add(plyer);
-			add(minions);
+			
 			add(fullSpider);
 			add(distanceText);
 			add(infoText);
@@ -99,10 +87,7 @@ package
 			distanceText.scrollFactor.x = 0;
 			distanceText.scrollFactor.y = 0;
 			
-			
-			
-			randomTileMap2.x -= randomTileMap1.width;
-			
+			randomTileMap2.x -= randomTileMap1.width;			
 			
 			FlxG.watch(plyer.acceleration, "x", "Player AccX");
 			FlxG.watch(fullSpider.spider.acceleration, "x", "Spider AccX");
@@ -114,11 +99,9 @@ package
 		
 		override public function update():void
 		{
-			
-			
 			//Collisions
 			FlxG.collide(tileMapsOnScreen, plyer);
-			FlxG.collide(minions, tileMapsOnScreen);
+			FlxG.collide(fullSpider, tileMapsOnScreen);
 			
 			//Setting camera bounds to increase as the player through the map
 			FlxG.camera.setBounds(0, 0, 300 + plyer.x, 360);
@@ -137,10 +120,7 @@ package
 			
 			//Enemy acceleration rate
 			fullSpider.spider.acceleration.x = fullSpider.spider.maxVelocity.x * 8;
-			
-			//Timer setup //TODO
-	
-			
+
 			//Calculating distance traveled with function calculatePlayerDistance
 			distance = calculatePlayerDistance(plyer);
 			
@@ -149,15 +129,7 @@ package
 			
 			//Prepares the incoming tilemap for the player
 			incomingTilemap();
-			
-
-			//Temporal control to create minions pressing Z
-			if (FlxG.keys.justPressed("Z"))
-			{
-				minions.launch();
-			}
-		
-			
+						
 			//Death trigger
 			if (gameOverTrigger())
 			{
@@ -166,7 +138,11 @@ package
 			
 			//Overlaps
 			FlxG.overlap(plyer, obstacleSpriteGroup, hitWeb);
-			FlxG.overlap(fullSpider.spider, minions, returnMinion);
+			FlxG.overlap(plyer.bullet.group, fullSpider.minions, destroyMinion);
+			
+			//Distance to launch minions
+			var distanceBetween:Number = plyer.x - fullSpider.spider.x;
+			Minion.distance = distanceBetween;
 			
 			super.update();
 			
@@ -214,16 +190,10 @@ package
 				added = false;
 			}
 		}
-		
-		//callback function that is executed when the timer finishes
-		public function onTimer(Timer:FlxTimer):void 
-		{
-			minions.callAll("eject", true);
-		}
-		
+			
 		// calculates the distance traveled by player, it make every 20 pixels
 		//1 meter
-		public function calculatePlayerDistance(playerToCalculate:player):uint
+		public function calculatePlayerDistance(playerToCalculate:Player):uint
 		{
 			var runnedDistance:uint = playerToCalculate.x / 20;
 			return runnedDistance;
@@ -334,6 +304,14 @@ package
 			deaccelarate();
 		}
 		
+		/**
+		 * This method is a NotifyCallback Function used when a minion is overlaped by a bullet
+		 */ 
+		public function destroyMinion(bullet:FlxObject, minion:FlxObject):void
+		{			
+			fullSpider.killMinion(minion);
+		}	
+		
 		/*
 		 * reduces players acceleration to 0
 		 * */
@@ -342,18 +320,7 @@ package
 			plyer.acceleration.x = 0;
 		
 		}
-		
-		/* function executed when spider overlaps a minion
-		 * destroy the minion so it can be reused
-		 */
-		public function returnMinion(spider:FlxObject, minion:FlxObject):void
-		{
-			if (minion.x < spider.x + spider.width / 2)
-			{
-				minion.kill();
-			}
-		}
-	
+			
 	}
 
 }

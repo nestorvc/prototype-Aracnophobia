@@ -19,12 +19,14 @@ package
 				tempMinion = getFirstDead();
 				var tempMinion2:Minion = tempMinion as Minion;					
 				tempMinion2.revive();
+				
 				tempMinion2.x = fatherMinion.x+fatherMinion.width;
-				tempMinion2.y = fatherMinion.y+fatherMinion.height/2;
+				tempMinion2.y = fatherMinion.y+fatherMinion.height/5;
 				tempMinion2.velocity.y = -tempMinion2.maxVelocity.y;
+				
 				tempMinion2.eject();
 			} else {
-				add(new Minion(fatherMinion.x+fatherMinion.width-20,fatherMinion.y+fatherMinion.height/2));
+				add(new Minion(fatherMinion.x+fatherMinion.width,fatherMinion.y+fatherMinion.height/5));
 			}
 		}
 	}
