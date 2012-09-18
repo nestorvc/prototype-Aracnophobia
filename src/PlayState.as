@@ -43,8 +43,7 @@ package
 		private var minions:Minions;
 		//Timer for minions
 		private var timer:FlxTimer;
-		//Auxiliar var to control Slide actions
-		private var auxSlide:Number;
+		
 		
 		public function PlayState()
 		{
@@ -82,10 +81,10 @@ package
 			
 			add(tileMapsOnScreen);
 			add(obstacleSpriteGroup);
+			add(plyer.bullet.group);
 			add(plyer);
 			add(minions);
 			add(fullSpider);
-			add(plyer.bullet.group);
 			add(distanceText);
 			add(infoText);
 			
@@ -100,7 +99,7 @@ package
 			distanceText.scrollFactor.x = 0;
 			distanceText.scrollFactor.y = 0;
 			
-			auxSlide = Math.floor(plyer.height / 2);
+			
 			
 			randomTileMap2.x -= randomTileMap1.width;
 			
@@ -109,7 +108,7 @@ package
 			FlxG.watch(fullSpider.spider.acceleration, "x", "Spider AccX");
 			FlxG.watch(fullSpider.spider, "x", "Player CoordX");
 			FlxG.watch(plyer, "height", "PLayer Height");
-			FlxG.watch(randomTileMap1, "x", "TilePosition");
+			FlxG.watch(plyer, "auxJump", "PLayer JumP");
 		
 		}
 		
@@ -151,51 +150,13 @@ package
 			//Prepares the incoming tilemap for the player
 			incomingTilemap();
 			
-			//Checks if the player is touching the floor, if key x has been
-			//just pressed player will jump
-			if (FlxG.keys.justPressed("X") && plyer.isTouching(FlxObject.FLOOR))
-			{
-				plyer.velocity.y = -plyer.maxVelocity.y / 2;
-				plyer.play("Jump");
-			}
-			
-			//Checks if the player is touching the floor, if key c has been
-			//just pressed player will slide
-			if(FlxG.keys.C) {
-				plyer.height = auxSlide;
-				plyer.width = 71;
-				plyer.offset.y = 20;
-				plyer.offset.x = -15;
-				
-				if(FlxG.keys.justPressed("C")){
-					plyer.y += auxSlide;
-					//plyer.play("XXX");
-					plyer.angle = -90;
-				}
-			} else {
-				plyer.height = 71;
-				plyer.width = 42;
-				plyer.offset.y = 0;
-				plyer.offset.x = 0;
-				
-				if(FlxG.keys.justReleased("C")){
-					plyer.y -= auxSlide;
-					plyer.angle = 0;
-				}				
-				plyer.play("Run");
-			}
-			
+
 			//Temporal control to create minions pressing Z
 			if (FlxG.keys.justPressed("Z"))
 			{
 				minions.launch();
 			}
-			//Fire bullet pressing Space
-			
-			if (FlxG.keys.justPressed("SPACE"))
-			{
-				plyer.bullet.fire();
-			}
+		
 			
 			//Death trigger
 			if (gameOverTrigger())
@@ -210,7 +171,7 @@ package
 			super.update();
 			
 			//Obstacles cleaning
-			if (obstacleSpriteGroup.length >= 20)
+			if (obstacleSpriteGroup.length >= 80)
 			{
 				obstacleSpriteGroup.remove(obstacleSpriteGroup.members[0], true);
 			}
