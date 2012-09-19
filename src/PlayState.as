@@ -22,9 +22,6 @@ package
 		private var added:Boolean;
 		//Group for sprite pool for dynamic obstacle creation.
 		private var obstacleSpriteGroup:FlxGroup;
-		//
-		private var web:Web;
-		private var webGround:WebGround;
 		//Text to display distance
 		private var distanceText:FlxText;
 		//Text to Display Controls
@@ -32,7 +29,7 @@ package
 		//Distace travelled by player
 		private var distance:uint;
 		//Player
-		private var plyer:Player;
+		private var player:Player;
 		//Enemy Spider
 		private var fullSpider:FullSpider;	
 		
@@ -50,9 +47,7 @@ package
 			obstacleSpriteGroup = new FlxGroup();
 			randomTileMap1 = new LowGroundTileMap();
 			randomTileMap2 = new LowGroundTileMap();			
-			web = new Web(400, 160);
-			webGround = new WebGround(800, 285);
-			plyer = new Player(randomTileMap1.x + 100, 100,50);
+			player = new Player(randomTileMap1.x + 100, 100,50);
 			fullSpider = new FullSpider(-500, 130);
 			distanceText = new FlxText(20, 20, 200);
 			infoText = new FlxText(400, 20, 200, "X to jump C to slide");
@@ -60,17 +55,25 @@ package
 			//******************ADDS******************
 			tileMapPool.add(new LowGroundTileMap());
 			tileMapPool.add(new LowGroundTileMap());
-			obstacleSpriteGroup.add(web);
-			obstacleSpriteGroup.add(webGround);
-			obstacleSpriteGroup.add(new WebGround(1100, 285));
-			obstacleSpriteGroup.add(new Web(1400, 160));
+			tileMapPool.add(new MediumGroundTileMap());
+			tileMapPool.add(new HighGroundTileMap());
+			tileMapPool.add(new PlatformTileMap());
+
+			
+			obstacleSpriteGroup.add(new Web(-800,-200));
+			obstacleSpriteGroup.add(new Web(-800,-200));
+			obstacleSpriteGroup.add(new WebGround( -800, -200));
+			obstacleSpriteGroup.add(new Web(-800,-200));
+			obstacleSpriteGroup.add(new WebGround(randomTileMap1.width/2,284-18));
+			
+			
 			tileMapsOnScreen.add(randomTileMap1);
 			tileMapsOnScreen.add(randomTileMap2);
 			
 			add(tileMapsOnScreen);
 			add(obstacleSpriteGroup);
-			add(plyer.bullet.group);
-			add(plyer);
+			add(player.bullet.group);
+			add(player);
 			
 			add(fullSpider);
 			add(distanceText);
@@ -87,27 +90,28 @@ package
 			distanceText.scrollFactor.x = 0;
 			distanceText.scrollFactor.y = 0;
 			
+			randomTileMap1.y = FlxG.height - randomTileMap1.height;
 			randomTileMap2.x -= randomTileMap1.width;			
 			
-			FlxG.watch(plyer.acceleration, "x", "Player AccX");
+			FlxG.watch(player.acceleration, "x", "Player AccX");
 			FlxG.watch(fullSpider.spider.acceleration, "x", "Spider AccX");
 			FlxG.watch(fullSpider.spider, "x", "Player CoordX");
-			FlxG.watch(plyer, "height", "PLayer Height");
-			FlxG.watch(plyer, "auxJump", "PLayer JumP");
+			FlxG.watch(player, "height", "PLayer Height");
+			FlxG.watch(player, "auxJump", "PLayer JumP");
 		
 		}
 		
 		override public function update():void
 		{
 			//Collisions
-			FlxG.collide(tileMapsOnScreen, plyer);
+			FlxG.collide(tileMapsOnScreen, player);
 			FlxG.collide(fullSpider, tileMapsOnScreen);
 			
 			//Setting camera bounds to increase as the player through the map
-			FlxG.camera.setBounds(0, 0, 300 + plyer.x, 360);
+			FlxG.camera.setBounds(0, 0, 300 + player.x, 360);
 			
 			//Setting camere style to platformer and to always follow the player
-			FlxG.camera.follow(plyer, FlxCamera.STYLE_PLATFORMER);
+			FlxG.camera.follow(player, FlxCamera.STYLE_PLATFORMER);
 			
 			//Setting the world bounds to be the double of the first tile map to make the generated tileMaps Solid
 			FlxG.worldBounds = new FlxRect(0, 0, randomTileMap1.x + 3000, 360);
@@ -116,13 +120,13 @@ package
 			fullSpider.spider.play("Bite");
 			
 			//Player acceleration rate
-			plyer.acceleration.x = plyer.maxVelocity.x * 8;
+			player.acceleration.x = player.maxVelocity.x * 8;
 			
 			//Enemy acceleration rate
 			fullSpider.spider.acceleration.x = fullSpider.spider.maxVelocity.x * 8;
 
 			//Calculating distance traveled with function calculatePlayerDistance
-			distance = calculatePlayerDistance(plyer);
+			distance = calculatePlayerDistance(player);
 			
 			//Refreshing text to always show current distance
 			distanceText.text = "Distance = " + distance.toString() + " Meters";
@@ -137,11 +141,11 @@ package
 			}
 			
 			//Overlaps
-			FlxG.overlap(plyer, obstacleSpriteGroup, hitWeb);
-			FlxG.overlap(plyer.bullet.group, fullSpider.minions, destroyMinion);
+			FlxG.overlap(player, obstacleSpriteGroup, hitWeb);
+			FlxG.overlap(player.bullet.group, fullSpider.minions, destroyMinion);
 			
 			//Distance to launch minions
-			var distanceBetween:Number = plyer.x - fullSpider.spider.x;
+			var distanceBetween:Number = player.x - fullSpider.spider.x;
 			Minion.distance = distanceBetween;
 			
 			super.update();
@@ -156,46 +160,41 @@ package
 		
 		public function incomingTilemap():void
 		{
-			//this if generates a ground sprite ahead of the player when he reaches half of
-			//the first ground sprite, it checks the control variable added so it wont keep
-			//building sprites
-			if (plyer.x >= (randomTileMap1.x + FlxG.width/2) && !added)
+			//this if generates a ground tilemap ahead of the player when he reaches half of
+			//the first ground tilemap, it checks the control variable added so it wont keep
+			//building tilemaps
+			if (player.x >= (randomTileMap1.x + FlxG.width/2) && !added)
 			{
 				
 				randomTileMap2 = generateTileMap(randomTileMap1);
 				
 				tileMapsOnScreen.add(randomTileMap2);
 				
-				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
-				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
-				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
+				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1],randomTileMap2));
 				
 				added = true;
 			}
 			
-			//this if generates a ground sprite ahead of the player when he reaches half of
-			//the second ground sprite, this new ground sprite will become the first ground sprite to create loop
+			//this if generates a ground tilemap ahead of the player when he reaches half of
+			//the second ground tilemap, this new ground tilemap will become the first ground tilemap to create loop
 			//it checks the control variable added so it wont keep
-			//building sprites	
-			if (plyer.x >= (randomTileMap2.x + FlxG.width/2) && added)
+			//building tilemaps	
+			if (player.x >= (randomTileMap2.x + FlxG.width/2) && added)
 			{
 				
 				randomTileMap1 = generateTileMap(randomTileMap2);
 				tileMapsOnScreen.add(randomTileMap1);
 				
-				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
-				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
-				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1]));
-				
+				obstacleSpriteGroup.add(generateObstacles(obstacleSpriteGroup.members[obstacleSpriteGroup.length - 1],randomTileMap1));
 				added = false;
 			}
 		}
 			
-		// calculates the distance traveled by player, it make every 20 pixels
+		// calculates the distance traveled by player, it make every 50 pixels
 		//1 meter
 		public function calculatePlayerDistance(playerToCalculate:Player):uint
 		{
-			var runnedDistance:uint = playerToCalculate.x / 20;
+			var runnedDistance:uint = playerToCalculate.x / 50;
 			return runnedDistance;
 		}
 		
@@ -224,21 +223,22 @@ package
 		/*
 		 * Places a tilemap according to the coordinates of the other
 		 * @param a referenceTileMap, this tile map is given to take it's coordinates and width
-		 * @param a tileMapToPosition, this tile map will be placed in fron of the referenceTileMap
+		 * @param a tileMapToPosition, this tile map will be placed in front of the referenceTileMap
 		 * */
 		public function positionTileMap(referenceTileMap:FlxTilemap, tileMapToPosition:FlxTilemap):void
 		{
-			tileMapToPosition.reset(referenceTileMap.width + referenceTileMap.x, referenceTileMap.y);
+			tileMapToPosition.reset(referenceTileMap.width + referenceTileMap.x+150, FlxG.height-tileMapToPosition.height);
 		
 		}
 		
 		/*
 		 * generates an obstacle to be placed on the screen
-		 * @param referenceObstacle, used to be pased to positionObstacle
+		 * @param referenceObstacle: new obstacle will be ahead of this one
+		 * @param referenceTileMap: new obstacle x and y will be calculated to this tilemap
 		 * @returns FlxSprite obstacle with x and y coordinates depending on referenceObstacle and obstacle class
 		 * */
 		
-		public function generateObstacles(referenceObstacle:FlxSprite):FlxSprite
+		public function generateObstacles(referenceObstacle:FlxSprite,referenceTileMap:FlxTilemap):FlxSprite
 		{
 			var obstacle:FlxSprite;
 			var assigner:Number = (Math.ceil(Math.random() * obstacleSpriteGroup.length)) - 1;
@@ -246,33 +246,33 @@ package
 			if (obstacle is Web)
 			{
 				obstacle = new Web(0, 0);
-				positionObstacle(referenceObstacle, obstacle);
+				positionObstacle(referenceObstacle, obstacle,referenceTileMap);
 			}
 			if (obstacle is WebGround)
 			{
 				obstacle = new WebGround(0, 0);
-				positionObstacle(referenceObstacle, obstacle);
+				positionObstacle(referenceObstacle, obstacle,referenceTileMap);
 			}
 			return obstacle;
 		}
 		
 		/* positions the new obstacle to always be ahead of reference obstacle
-		 * @param referenceObstacle, takes x position and width to place new obstacle ahead
-		 * @param obstacleToPosition, new obstacle that will be placed in a random distance from 300 to 400 pixels ahead of referenceObstacle, y depends on the class of the obstacle
+		 * @param referenceObstacle: takes x position to place obstacle to position ahead
+		 * @param obstacleToPosition: this will is the obstacle to be positioned
+		 * @param referenceTileMap: obstacle will be positiones according to this width and height
 		 * */
-		public function positionObstacle(referenceObstacle:FlxSprite, obstacleToPosition:FlxSprite):void
+		public function positionObstacle(referenceObstacle:FlxSprite, obstacleToPosition:FlxSprite,referenceTileMap:FlxTilemap):void
 		{
-			var betweenDistanceX:uint = (Math.ceil(Math.random() * 100)) + 300;
-			
+
 			if (obstacleToPosition is Web)
 			{
-				obstacleToPosition.x = referenceObstacle.x + referenceObstacle.width + betweenDistanceX;
-				obstacleToPosition.y = 160;
+				obstacleToPosition.x = referenceObstacle.x + referenceTileMap.width + 150;
+				obstacleToPosition.y = referenceTileMap.y - obstacleToPosition.height - player.height+10;
 			}
 			if (obstacleToPosition is WebGround)
 			{
-				obstacleToPosition.x = referenceObstacle.x + referenceObstacle.width + betweenDistanceX;
-				obstacleToPosition.y = 285;
+				obstacleToPosition.x = referenceObstacle.x + referenceTileMap.width+ 150;
+				obstacleToPosition.y = referenceTileMap.y-obstacleToPosition.height;
 			}		
 		}
 		
@@ -283,11 +283,11 @@ package
 		public function gameOverTrigger():Boolean
 		{
 			var gameOver:Boolean = false;
-			if (FlxCollision.pixelPerfectCheck(plyer, fullSpider.spider))
+			if (FlxCollision.pixelPerfectCheck(player, fullSpider.spider))
 			{
 				gameOver = true;
 			}
-			if (plyer.y >= 360)
+			if (player.y >= 360)
 			{
 				gameOver = true;
 			}
@@ -298,7 +298,7 @@ package
 		 * @param plyer required for overlapse function
 		 * @param web, required for overlapse funcion
 		 * */
-		public function hitWeb(plyer:FlxObject, web:FlxObject):void
+		public function hitWeb(player:FlxObject, web:FlxObject):void
 		{
 			web.flicker();
 			deaccelarate();
@@ -317,7 +317,7 @@ package
 		 * */
 		public function deaccelarate():void
 		{
-			plyer.acceleration.x = 0;
+			player.acceleration.x = 0;
 		
 		}
 			

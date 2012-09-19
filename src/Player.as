@@ -36,7 +36,7 @@ package
 			//bullet direction and speed
 			bullet.setBulletDirection(FlxWeapon.BULLET_RIGHT, 600);
 			
-			maxVelocity.x = 280;
+			maxVelocity.x = 380;
 			maxVelocity.y = 600;
 			acceleration.y = 800;
 			drag.x = maxVelocity.x * 1.5;
@@ -59,8 +59,11 @@ package
 							auxJump = -1;
 					}
 
-				}			
-			
+				}		
+			//Controls player not being able to double jump
+			if (FlxG.keys.justReleased("X")) {
+				auxJump = -1;
+				}
 			//Checks if the player is touching the floor, inf jump control variable is larger than 0 and  if key x has been
 			//pressed player will jump, depending on how long keys was pressed
 				if (auxJump > 0 && FlxG.keys.X)
@@ -70,6 +73,8 @@ package
 				else	
 					velocity.y = -maxVelocity.y/2 - maxVelocity.y/10;
 			}
+			
+			
 
 			
 			//Checks if the player is touching the floor, if key c has been
@@ -107,7 +112,7 @@ package
 			
 			super.update();
 			//sets jump control variable to 0 when player has just touched the floor
-		if (justTouched(FlxObject.FLOOR)) {
+		if (isTouching(FlxObject.FLOOR)) {
 			auxJump = 0;
 			}	
 			

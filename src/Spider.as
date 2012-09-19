@@ -25,7 +25,7 @@ package
 			
 			immovable = true;
 			
-			maxVelocity.x = 200;
+			maxVelocity.x = 370;
 			maxVelocity.y = 100;
 			/*acceleration.y = 200;*/
 			drag.x = maxVelocity.x * 2;
